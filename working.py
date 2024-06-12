@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Path, Query
+from fastapi import FastAPI, HTTPException, Path, Query
 from pydantic import BaseModel
 
 
@@ -30,6 +30,8 @@ def get_items():
 
 @app.get("/items/{item_id}")
 def get_item_by_id(item_id: int = Path(title="Item ID", description="The ID of the item.")):
+    if item_id not in inventory:
+        raise HTTPException(status_code=404, detail="Item not found.")
     return inventory[item_id]
 
 @app.get("/items/by-name/")
@@ -37,19 +39,19 @@ def get_item_by_name(name: str = Query(title="Name", description="The name of th
     for item_id in inventory:
         if inventory[item_id].name == name:
             return inventory[item_id]
-    return {"Data": "Not found"}
+    raise HTTPException(status_code=404, detail="Item not found.")
 
 @app.post("/items/{item_id}")
 def create_item(item_id: int, item: Item):
     if item_id in inventory:
-        return {"Error": "Item already exists."}
+        raise HTTPException(status_code=400, detail="Item already exists.")
     inventory[item_id] = item
     return inventory[item_id]
 
 @app.put("/items/{item_id}")
 def update_item(item_id: int, item: UpdateItem):
     if item_id not in inventory:
-        return {"Error": "Item does not exist."}
+        raise HTTPException(status_code=404, detail="Item not found.")
     if item.name:
         inventory[item_id].name = item.name
     if item.price:
@@ -61,6 +63,6 @@ def update_item(item_id: int, item: UpdateItem):
 @app.delete("/items/{item_id}")
 def delete_item(item_id: int):
     if item_id not in inventory:
-        return {"Error": "Item does not exist."}
+        raise HTTPException(status_code=404, detail="Item not found.")
     del inventory[item_id]
     return {"Message": "Item deleted."}
