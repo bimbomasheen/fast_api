@@ -1,20 +1,9 @@
 from fastapi import FastAPI, HTTPException, Path, Query
-from pydantic import BaseModel
+
+from models import Item, UpdateItem
 
 
 app = FastAPI()
-
-
-# MODELS #
-class Item(BaseModel):
-    name: str
-    price: float
-    brand: str|None = None
-
-class UpdateItem(BaseModel):
-    name: str|None = None
-    price: float|None = None
-    brand: str|None = None
 
 inventory = {}
 
